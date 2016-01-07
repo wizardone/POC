@@ -1,13 +1,13 @@
 class Customer
   attr_reader :id, :params
 
-  def initialize(params = {})
-    #@id = id
+  def initialize(params)
     @params = params
   end
 
   def to_hash
-    # Passing a raw hash like {values: params} is not working
+    # if params is passed as a hash it will not work
+    # TODO: see why it is failing
     params
   end
 end

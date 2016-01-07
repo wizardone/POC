@@ -1,13 +1,14 @@
 class Appointment
   attr_reader :id, :params
 
-  def initialize(id, params)
-    @id = id
+  def initialize(params)
     @params = params
   end
 
   def to_hash
-    @params
+    # if params is passed as a hash it will not work
+    # TODO: see why it is failing
+    params
   end
 end
 
