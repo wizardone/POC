@@ -10,35 +10,7 @@ require_relative '../location.rb'
 RSpec.describe 'Elasticsearch Repository class POC' do
 
   let(:repository) do
-    Elasticsearch::Persistence::Repository.new do
-      client Elasticsearch::Client.new url: 'http://localhost:9200', log: true
-      index SecureRandom.uuid
-      type 'search_service'
-      klass Repository
-
-      settings index: {
-        analysis: {
-          filter: {
-            substring: {
-              type: 'edge_ngram',
-              min_gram: 1,
-              max_gram: 10
-            }
-          },
-          analyzer: {
-            autocomplete: {
-              type: 'custom',
-              tokenizer: 'standard',
-              filter: %w(lowercase substring)
-            }
-          }
-        }
-      } do
-        mappings do
-          indexes :values, analyzer: 'autocomplete'
-        end
-      end
-    end
+    Repository.new
   end
 
   before do
@@ -90,14 +62,31 @@ RSpec.describe 'Elasticsearch Repository class POC' do
       expect(repository.update(id: '567', values: ['Sofia']))
         .to include('_version' => 2)
     end
-
   end
 
   context 'searching multiple objects in ES' do
+    it 'searches for value john' do
+      save_customer
+      save_appointment
+      repository.refresh_index!
 
+      expect(
+        parsed_result(repository.search(query: { match: { values: 'john' } }).response))
+        .to eq(['123', '345'])
+    end
+
+    it 'updates object appointment with new values' do
+    end
+
+    it 'updates object location with new values' do
+    end
   end
 
   private
+
+  def parsed_result(response)
+    response['hits']['hits'].map { |hit| hit['_id'] }
+  end
 
   def save_customer
     repository.save(
@@ -107,7 +96,7 @@ RSpec.describe 'Elasticsearch Repository class POC' do
 
   def save_appointment
     repository.save(
-      Appointment.new(id: '345', values: ['reserved', 'center'])
+      Appointment.new(id: '345', values: ['reserved', 'center', 'for john'])
     )
   end
 
