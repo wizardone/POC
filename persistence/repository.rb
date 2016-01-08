@@ -34,11 +34,11 @@ class Repository
     end
   end
 
-  def serialize(document)
-    document.to_hash
-  end
+  # By default serialize is called with
+  # document.to_hash
+  #def serialize(document)
+  #end
 
-  def deserialize(document)
-
-  end
+  #def deserialize(document)
+  #end
 end
