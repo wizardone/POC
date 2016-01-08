@@ -1,6 +1,7 @@
 require 'rspec'
 require 'securerandom'
 require 'elasticsearch/persistence'
+require 'byebug'
 
 require_relative '../repository.rb'
 require_relative '../customer.rb'
@@ -42,43 +43,51 @@ RSpec.describe 'Elasticsearch Repository class POC' do
   end
 
   context 'updating multiple objects in ES' do
-    it 'updates object customer with new values' do
+    before do
       save_customer
+      save_appointment
+      save_location
+      repository.refresh_index!
+    end
 
+    it 'finds any kind of document by id' do
+      expect(repository.find(345)).to eq('ha?')
+    end
+
+    it 'updates object customer with new values' do
       expect(repository.update(id: '123', values: ['New John', 'married']))
         .to include('_version' => 2)
     end
 
     it 'updates object appointment with new values' do
-      save_appointment
-
       expect(repository.update(id: '345', values: ['cancelled']))
         .to include('_version' => 2)
     end
 
     it 'updates object location with new values' do
-      save_location
-
       expect(repository.update(id: '567', values: ['Sofia']))
         .to include('_version' => 2)
     end
   end
 
   context 'searching multiple objects in ES' do
-    it 'searches for value john' do
+    before do
       save_customer
       save_appointment
+      save_location
       repository.refresh_index!
+    end
 
+    it 'searches for value john' do
       expect(
         parsed_result(repository.search(query: { match: { values: 'john' } }).response))
         .to eq(['123', '345'])
     end
 
-    it 'updates object appointment with new values' do
-    end
-
-    it 'updates object location with new values' do
+    it 'searches for value munich' do
+      expect(
+        parsed_result(repository.search(query: { match: { values: 'munich' } }).response))
+        .to eq(['567'])
     end
   end
 
@@ -90,19 +99,22 @@ RSpec.describe 'Elasticsearch Repository class POC' do
 
   def save_customer
     repository.save(
-      Customer.new(id: '123', values: ['John', 'single', '34'])
+      #Customer.new(id: '123', values: ['John', 'single', '34'])
+      { id: '123', values: ['John', 'single', '34'] }
     )
   end
 
   def save_appointment
     repository.save(
-      Appointment.new(id: '345', values: ['reserved', 'center', 'for john'])
+      #Appointment.new(id: '345', values: ['reserved', 'center', 'for john'])
+      { id: '345', values: ['reserved', 'center', 'for john'] }
     )
   end
 
   def save_location
     repository.save(
-      Location.new(id: '567', values: ['Munich'])
+      #Location.new(id: '567', values: ['Munich'])
+      { id: '567', values: ['Munich'] }
     )
   end
 end

@@ -1,4 +1,5 @@
 require 'elasticsearch/persistence'
+require 'byebug'
 
 class Repository
   include Elasticsearch::Persistence::Repository
@@ -36,9 +37,8 @@ class Repository
 
   # By default serialize is called with
   # document.to_hash
-  #def serialize(document)
-  #end
+  def serialize(document)
+    document
+  end
 
-  #def deserialize(document)
-  #end
 end
